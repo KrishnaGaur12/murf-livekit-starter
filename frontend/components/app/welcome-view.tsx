@@ -1,64 +1,123 @@
 import { Button } from '@/components/ui/button';
-
-function WelcomeImage() {
-  return (
-    <svg
-      width="64"
-      height="64"
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="text-fg0 mb-4 size-16"
-    >
-      <path
-        d="M15 24V40C15 40.7957 14.6839 41.5587 14.1213 42.1213C13.5587 42.6839 12.7956 43 12 43C11.2044 43 10.4413 42.6839 9.87868 42.1213C9.31607 41.5587 9 40.7957 9 40V24C9 23.2044 9.31607 22.4413 9.87868 21.8787C10.4413 21.3161 11.2044 21 12 21C12.7956 21 13.5587 21.3161 14.1213 21.8787C14.6839 22.4413 15 23.2044 15 24ZM22 5C21.2044 5 20.4413 5.31607 19.8787 5.87868C19.3161 6.44129 19 7.20435 19 8V56C19 56.7957 19.3161 57.5587 19.8787 58.1213C20.4413 58.6839 21.2044 59 22 59C22.7956 59 23.5587 58.6839 24.1213 58.1213C24.6839 57.5587 25 56.7957 25 56V8C25 7.20435 24.6839 6.44129 24.1213 5.87868C23.5587 5.31607 22.7956 5 22 5ZM32 13C31.2044 13 30.4413 13.3161 29.8787 13.8787C29.3161 14.4413 29 15.2044 29 16V48C29 48.7957 29.3161 49.5587 29.8787 50.1213C30.4413 50.6839 31.2044 51 32 51C32.7956 51 33.5587 50.6839 34.1213 50.1213C34.6839 49.5587 35 48.7957 35 48V16C35 15.2044 34.6839 14.4413 34.1213 13.8787C33.5587 13.3161 32.7956 13 32 13ZM42 21C41.2043 21 40.4413 21.3161 39.8787 21.8787C39.3161 22.4413 39 23.2044 39 24V40C39 40.7957 39.3161 41.5587 39.8787 42.1213C40.4413 42.6839 41.2043 43 42 43C42.7957 43 43.5587 42.6839 44.1213 42.1213C44.6839 41.5587 45 40.7957 45 40V24C45 23.2044 44.6839 22.4413 44.1213 21.8787C43.5587 21.3161 42.7957 21 42 21ZM52 17C51.2043 17 50.4413 17.3161 49.8787 17.8787C49.3161 18.4413 49 19.2044 49 20V44C49 44.7957 49.3161 45.5587 49.8787 46.1213C50.4413 46.6839 51.2043 47 52 47C52.7957 47 53.5587 46.6839 54.1213 46.1213C54.6839 45.5587 55 44.7957 55 44V20C55 19.2044 54.6839 18.4413 54.1213 17.8787C53.5587 17.3161 52.7957 17 52 17Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
+import { ShieldCheckIcon, BadgeCheckIcon, PhoneCallIcon } from 'lucide-react';
 
 interface WelcomeViewProps {
   startButtonText: string;
-  onStartCall: () => void;
+  onStartCall: (topic?: string) => void;
+  micError?: string | null;
+  hasEnded?: boolean;
 }
 
 export const WelcomeView = ({
-  startButtonText,
   onStartCall,
+  micError,
+  hasEnded,
   ref,
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
-  return (
-    <div ref={ref}>
-      <section className="bg-background flex flex-col items-center justify-center text-center">
-        <WelcomeImage />
 
-        <p className="text-foreground max-w-prose pt-1 leading-6 font-medium">
-          Chat live with your voice AI agent
-        </p>
-
-        <Button
-          size="lg"
-          onClick={onStartCall}
-          className="mt-6 w-64 rounded-full font-mono text-xs font-bold tracking-wider uppercase"
-        >
-          {startButtonText}
-        </Button>
-      </section>
-
-      <div className="fixed bottom-5 left-0 flex w-full items-center justify-center">
-        <p className="text-muted-foreground max-w-prose pt-1 text-xs leading-5 font-normal text-pretty md:text-sm">
-          Need help getting set up? Check out the{' '}
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            href="https://docs.livekit.io/agents/start/voice-ai/"
-            className="underline"
+  if (hasEnded) {
+    return (
+      <div ref={ref} className="flex min-h-[70vh] items-center justify-center px-4">
+        <div className="w-full max-w-lg bg-white rounded-xl shadow-lg border border-gray-200 p-8 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-600 mb-6">
+            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">Consultation Completed</h2>
+          <p className="text-gray-600 mb-8">
+            The voice call session has ended. You can start a new consultation below.
+          </p>
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-8 flex justify-center items-center gap-2 text-sm font-semibold text-gray-700">
+            <span>⏱</span> Call Duration: 1 minutes 52 seconds
+          </div>
+          <Button 
+            onClick={() => onStartCall()}
+            className="w-full h-12 bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-bold text-lg rounded-md"
           >
-            Voice AI quickstart
-          </a>
-          .
-        </p>
+            Start New Voice Call
+          </Button>
+          <button className="mt-4 text-sm text-gray-500 hover:text-gray-800 font-medium underline-offset-4 hover:underline">
+            Return to Home Portal
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={ref} className="w-full max-w-7xl mx-auto px-4 py-8">
+      {micError && (
+        <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🎤</span>
+            <div>
+              <h3 className="font-bold text-red-900">Microphone Access Required</h3>
+              <p className="text-sm text-red-700">{micError}</p>
+            </div>
+          </div>
+          <Button variant="outline" onClick={() => window.location.reload()} className="border-red-200 text-red-700 bg-white">
+            Refresh
+          </Button>
+        </div>
+      )}
+
+      {/* Hero Card */}
+      <div className="bg-white border-l-[6px] border-l-[#FF9933] border border-gray-200 shadow-sm rounded-r-lg p-8 md:p-12 mb-8 flex flex-col-reverse md:flex-row items-center justify-between gap-8">
+        <div className="flex-1">
+          <h1 className="text-3xl md:text-4xl font-bold text-[#0c2f4c] mb-4 leading-tight">
+            Discover Welfare Schemes & Prevent Digital Scams via Voice AI
+          </h1>
+          <p className="text-gray-600 text-lg mb-8 max-w-2xl">
+            Start an encrypted voice call with our AI citizen advisor to ask queries in Hindi, English, and regional languages. Zero registration or login details required.
+          </p>
+          
+          <div className="flex flex-wrap gap-4">
+            <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded border border-gray-200 text-sm font-semibold text-gray-700">
+              <ShieldCheckIcon className="w-4 h-4 text-blue-600" /> 100% Secure
+            </div>
+            <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded border border-gray-200 text-sm font-semibold text-gray-700">
+              <BadgeCheckIcon className="w-4 h-4 text-green-600" /> Verified Scheme Data
+            </div>
+            <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded border border-gray-200 text-sm font-semibold text-gray-700">
+              <PhoneCallIcon className="w-4 h-4 text-red-500" /> Direct Helpline Links
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex-shrink-0 relative">
+          <div className="absolute inset-0 bg-green-500/20 rounded-full blur-xl animate-pulse" />
+          <button 
+            onClick={() => onStartCall()}
+            className="relative w-40 h-40 md:w-48 md:h-48 rounded-full bg-white border border-gray-100 shadow-xl flex flex-col items-center justify-center gap-3 transition-transform hover:scale-105 active:scale-95 group"
+          >
+            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#1B5E20] text-white flex items-center justify-center shadow-inner group-hover:bg-[#2E7D32] transition-colors">
+              <svg className="w-10 h-10 md:w-12 md:h-12" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+              </svg>
+            </div>
+            <span className="text-[10px] md:text-xs font-bold text-gray-500 tracking-wider">CLICK TO START CALL</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Grid Features */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          { icon: "🏛️", title: "Government Schemes", desc: "Search criteria, documents, and application guides for welfare schemes." },
+          { icon: "🚨", title: "Fraud Prevention", desc: "UPI collect scam warnings, OTP protection tips, and phishing safety." },
+          { icon: "💰", title: "Financial Literacy", desc: "Basic savings guides, direct benefit transfer (DBT) linking details." },
+          { icon: "📞", title: "Complaint Helplines", desc: "Step-by-step reporting to RBI Ombudsman or Cyber Crime Portal." },
+        ].map((feature, i) => (
+          <div key={i} className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-10 h-10 bg-gray-50 rounded flex items-center justify-center text-xl mb-4 border border-gray-100">
+              {feature.icon}
+            </div>
+            <h3 className="font-bold text-gray-900 mb-2">{feature.title}</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">{feature.desc}</p>
+          </div>
+        ))}
       </div>
     </div>
   );

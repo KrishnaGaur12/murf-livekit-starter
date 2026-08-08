@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, type MotionProps, motion } from 'motion/react';
-import { useAgent, useSessionContext, useSessionMessages } from '@livekit/components-react';
+import { useAgent, useSessionContext, useSessionMessages, useChat } from '@livekit/components-react';
 import { AgentChatTranscript } from '@/components/agents-ui/agent-chat-transcript';
 import {
   AgentControlBar,
@@ -151,17 +151,18 @@ export interface AgentSessionView_01Props {
   audioVisualizerRadialRadius?: number;
   /** Stroke width of the wave path when `audioVisualizerType` is `wave`. */
   audioVisualizerWaveLineWidth?: number;
-  /** Optional class name merged onto the outer `<section>` container. */
+  /** The initial topic to start the conversation with */
+  initialTopic?: string;
   className?: string;
 }
 
 export function AgentSessionView_01({
-  preConnectMessage = 'Agent is listening, ask it a question',
+  preConnectMessage = 'Ready to Assist',
   supportsChatInput = true,
   supportsVideoInput = true,
   supportsScreenShare = true,
   isPreConnectBufferEnabled = true,
-
+  initialTopic,
   audioVisualizerType,
   audioVisualizerColor,
   audioVisualizerColorShift,
@@ -177,9 +178,18 @@ export function AgentSessionView_01({
 }: React.ComponentProps<'section'> & AgentSessionView_01Props) {
   const session = useSessionContext();
   const { messages } = useSessionMessages(session);
+  const { send } = useChat();
   const [chatOpen, setChatOpen] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { state: agentState } = useAgent();
+  const initialTopicSent = useRef(false);
+
+  useEffect(() => {
+    if (initialTopic && session.isConnected && !initialTopicSent.current && send) {
+      initialTopicSent.current = true;
+      send(initialTopic);
+    }
+  }, [initialTopic, session.isConnected, send]);
 
   const controls: AgentControlBarControls = {
     leave: true,
@@ -201,74 +211,74 @@ export function AgentSessionView_01({
   return (
     <section
       ref={ref}
-      className={cn('bg-background relative z-10 h-full w-full overflow-hidden', className)}
+      className={cn('bg-background relative z-10 h-full w-full overflow-hidden flex flex-col', className)}
       {...props}
     >
-      <Fade top className="absolute inset-x-4 top-0 z-10 h-40" />
-      {/* transcript */}
-
-      <div className="absolute top-0 bottom-[135px] flex w-full flex-col md:bottom-[170px]">
-        <AnimatePresence>
-          {chatOpen && (
-            <motion.div
-              {...CHAT_MOTION_PROPS}
-              className="flex h-full w-full flex-col gap-4 space-y-3 transition-opacity duration-300 ease-out"
-            >
-              <AgentChatTranscript
-                agentState={agentState}
-                messages={messages}
-                className="mx-auto w-full max-w-2xl [&_.is-user>div]:rounded-[22px] [&>div>div]:px-4 [&>div>div]:pt-40 md:[&>div>div]:px-6"
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-      {/* Tile layout */}
-      <TileLayout
-        chatOpen={chatOpen}
-        audioVisualizerType={audioVisualizerType}
-        audioVisualizerColor={audioVisualizerColor}
-        audioVisualizerColorShift={audioVisualizerColorShift}
-        audioVisualizerBarCount={audioVisualizerBarCount}
-        audioVisualizerRadialBarCount={audioVisualizerRadialBarCount}
-        audioVisualizerRadialRadius={audioVisualizerRadialRadius}
-        audioVisualizerGridRowCount={audioVisualizerGridRowCount}
-        audioVisualizerGridColumnCount={audioVisualizerGridColumnCount}
-        audioVisualizerWaveLineWidth={audioVisualizerWaveLineWidth}
-      />
-      {/* Bottom */}
-      <motion.div
-        {...BOTTOM_VIEW_MOTION_PROPS}
-        className="absolute inset-x-3 bottom-0 z-50 md:inset-x-12"
-      >
-        {/* Pre-connect message */}
-        {isPreConnectBufferEnabled && (
-          <AnimatePresence>
-            {messages.length === 0 && (
-              <MotionMessage
-                key="pre-connect-message"
-                duration={2}
-                aria-hidden={messages.length > 0}
-                {...SHIMMER_MOTION_PROPS}
-                className="pointer-events-none mx-auto block w-full max-w-2xl pb-4 text-center text-sm font-semibold"
-              >
-                {preConnectMessage}
-              </MotionMessage>
-            )}
-          </AnimatePresence>
-        )}
-        <div className="bg-background relative mx-auto max-w-2xl pb-3 md:pb-12">
-          <Fade bottom className="absolute inset-x-0 top-0 h-4 -translate-y-full" />
-          <AgentControlBar
-            variant="livekit"
-            controls={controls}
-            isChatOpen={chatOpen}
-            isConnected={session.isConnected}
-            onDisconnect={session.end}
-            onIsChatOpenChange={setChatOpen}
-          />
+      <div className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-8 flex flex-col lg:flex-row gap-6 h-[calc(100vh-220px)]">
+        
+        {/* Left Panel: Avatar & Status */}
+        <div className="flex-1 bg-white border border-gray-200 rounded-xl shadow-sm flex flex-col items-center justify-center p-8 relative overflow-hidden">
+          <div className="relative mb-6">
+            <div className={cn(
+              "absolute inset-0 rounded-full blur-xl transition-all duration-500",
+              agentState === 'listening' ? "bg-blue-500/30 animate-pulse" :
+              agentState === 'speaking' ? "bg-green-500/40 animate-pulse" :
+              "bg-gray-200"
+            )} />
+            <img 
+              src="/avatar.png" 
+              alt="Jan Sahayak AI Avatar" 
+              className={cn(
+                "relative size-48 md:size-64 rounded-full border-[6px] shadow-lg object-cover z-10 transition-colors duration-300",
+                agentState === 'listening' ? "border-blue-500" :
+                agentState === 'speaking' ? "border-green-500" :
+                "border-gray-200"
+              )}
+            />
+          </div>
+          
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            {agentState === 'connecting' || agentState === 'initializing' ? 'Connecting...' :
+             agentState === 'listening' ? 'Listening...' :
+             agentState === 'thinking' ? 'Thinking...' :
+             agentState === 'speaking' ? 'Jan Sahayak AI is speaking...' : preConnectMessage}
+          </h2>
+          <p className="text-gray-500 text-center max-w-sm">
+            Ask about PM-Kisan, report cyber crimes, verify UPI links, or ask for basic savings guidance.
+          </p>
         </div>
-      </motion.div>
+
+        {/* Right Panel: Live Transcript */}
+        <div className="flex-1 bg-gray-50 border border-gray-200 rounded-xl shadow-sm flex flex-col relative overflow-hidden">
+          <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between z-10">
+            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Live Transcript</h3>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-xs font-bold text-green-600 uppercase">Live</span>
+            </div>
+          </div>
+          <div className="flex-1 overflow-y-auto relative z-0 p-4">
+            <AgentChatTranscript
+              agentState={agentState}
+              messages={messages}
+              className="w-full"
+            />
+          </div>
+        </div>
+
+      </div>
+
+      {/* Bottom Control Bar Container */}
+      <div className="bg-[#111111] absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full px-6 py-2 shadow-2xl border border-gray-800 z-50">
+        <AgentControlBar
+          variant="livekit"
+          controls={controls}
+          isChatOpen={true}
+          isConnected={session.isConnected}
+          onDisconnect={session.end}
+          onIsChatOpenChange={() => {}}
+        />
+      </div>
     </section>
   );
 }

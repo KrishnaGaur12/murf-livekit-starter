@@ -33,40 +33,26 @@ export interface AppConfig {
 }
 
 export const APP_CONFIG_DEFAULTS: AppConfig = {
-  companyName: 'Murf AI',
-  pageTitle: 'Voice Agent Starter',
-  pageDescription: 'A voice agent powered by Murf Falcon — the fastest TTS API',
+  companyName: 'JanSahayak AI',
+  pageTitle: 'JanSahayak AI - Your Voice. Your Government.',
+  pageDescription: 'An AI-powered voice assistant that helps Indian citizens access government schemes, public services, and file civic complaints.',
 
   supportsChatInput: true,
-  supportsVideoInput: true,
-  supportsScreenShare: true,
+  supportsVideoInput: false,
+  supportsScreenShare: false,
   isPreConnectBufferEnabled: true,
 
-  logo: '/murf-logo.svg',
-  accent: '#6366F1',
-  logoDark: '/murf-logo-dark.svg',
-  accentDark: '#818cf8',
-  startButtonText: 'Start talking',
+  logo: '/jansahayak-logo.svg', // Assuming a generic logo name, we can just use text in the navbar
+  accent: '#1E40AF', // Deep Blue
+  logoDark: '/jansahayak-logo-dark.svg',
+  accentDark: '#60A5FA',
+  startButtonText: 'Start Voice Conversation',
 
-  // optional: audio visualization configuration
-  // audioVisualizerType: 'bar',
-  // audioVisualizerColor: '#002cf2',
-  // audioVisualizerColorDark: '#1fd5f9',
-  // audioVisualizerColorShift: 0.3,
-  // audioVisualizerBarCount: 5,
-  // audioVisualizerType: 'radial',
-  // audioVisualizerRadialBarCount: 24,
-  // audioVisualizerRadialRadius: 100,
-  // audioVisualizerType: 'grid',
-  // audioVisualizerGridRowCount: 25,
-  // audioVisualizerGridColumnCount: 25,
-  // audioVisualizerType: 'wave',
-  // audioVisualizerWaveLineWidth: 3,
-  // audioVisualizerType: 'aura',
+  audioVisualizerType: 'wave',
+  audioVisualizerColor: '#1E40AF',
+  audioVisualizerColorDark: '#60A5FA',
+  audioVisualizerWaveLineWidth: 3,
 
-  // agent dispatch configuration
   agentName: process.env.AGENT_NAME ?? undefined,
-
-  // LiveKit Cloud Sandbox configuration
   sandboxId: undefined,
 };

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import { AnimatePresence, motion } from 'motion/react';
 import { useSessionContext } from '@livekit/components-react';
@@ -36,6 +37,36 @@ export function ViewController({ appConfig }: ViewControllerProps) {
   const { isConnected, start } = useSessionContext();
   const { resolvedTheme } = useTheme();
 
+  const [micError, setMicError] = useState<string | null>(null);
+  const [hasEnded, setHasEnded] = useState(false);
+  const [wasConnected, setWasConnected] = useState(false);
+  const [initialTopic, setInitialTopic] = useState<string | undefined>();
+
+  useEffect(() => {
+    if (isConnected) setWasConnected(true);
+    if (!isConnected && wasConnected) {
+      setHasEnded(true);
+      setInitialTopic(undefined); // Reset on end
+    }
+  }, [isConnected, wasConnected]);
+
+  const handleStartCall = async (topic?: string) => {
+    setMicError(null);
+    if (topic) {
+      setInitialTopic(topic);
+    }
+    try {
+      await start();
+    } catch (e: any) {
+      console.error('Failed to start session', e);
+      if (e?.name === 'NotAllowedError' || e?.message?.includes('Permission denied') || e?.message?.includes('Permission denied by system')) {
+        setMicError('JanSahayak AI needs microphone permission to hear your voice. Please enable microphone access in your browser to continue.');
+      } else {
+        setMicError('An error occurred while connecting to the agent. Please try again.');
+      }
+    }
+  };
+
   return (
     <AnimatePresence mode="wait">
       {/* Welcome view */}
@@ -43,8 +74,10 @@ export function ViewController({ appConfig }: ViewControllerProps) {
         <MotionWelcomeView
           key="welcome"
           {...VIEW_MOTION_PROPS}
-          startButtonText={appConfig.startButtonText}
-          onStartCall={start}
+          startButtonText={hasEnded ? 'Start New Conversation' : appConfig.startButtonText}
+          onStartCall={handleStartCall}
+          micError={micError}
+          hasEnded={hasEnded}
         />
       )}
       {/* Session view */}
@@ -52,6 +85,7 @@ export function ViewController({ appConfig }: ViewControllerProps) {
         <MotionSessionView
           key="session-view"
           {...VIEW_MOTION_PROPS}
+          initialTopic={initialTopic}
           supportsChatInput={appConfig.supportsChatInput}
           supportsVideoInput={appConfig.supportsVideoInput}
           supportsScreenShare={appConfig.supportsScreenShare}

@@ -59,10 +59,19 @@ export function AgentChatTranscript({
           const locale = navigator?.language ?? 'en-US';
           const messageOrigin = from?.isLocal ? 'user' : 'assistant';
           const time = new Date(timestamp);
-          const title = time.toLocaleTimeString(locale, { timeStyle: 'full' });
+          const title = time.toLocaleTimeString(locale, { timeStyle: 'short' });
+          const speakerName = messageOrigin === 'user' ? '👤 You' : '🤖 JanSahayak AI';
 
           return (
             <Message key={id} title={title} from={messageOrigin}>
+              <div
+                className={`flex items-center gap-2 mb-1 text-xs font-semibold text-muted-foreground ${
+                  messageOrigin === 'user' ? 'justify-end flex-row-reverse' : 'justify-start'
+                }`}
+              >
+                <span>{speakerName}</span>
+                <span className="text-[10px] opacity-60">{title}</span>
+              </div>
               <MessageContent>
                 <MessageResponse>{message}</MessageResponse>
               </MessageContent>
